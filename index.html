@@ -1,0 +1,383 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>ArcGIS API for JavaScript Tutorials: Display a map</title>
+
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+		#ShowInfo {
+			position: absolute;
+			bottom: 2%;
+			left: 1%;
+			padding: 10px 20px;
+			border: 3px solid rgb(80,80,80,0.7);
+			
+			background-color: rgb(255,255,255,0.7);
+			opacity: 0.8;
+			font-family: "Comic Sans MS";
+			font-size: 14px;
+		}
+		#ShowInfo1 {
+			position: absolute;
+			top: 2%;
+			left: 41%;
+			
+			padding: 10px 20px;
+			
+			
+			background-color: rgb(255,255,255,0.7);
+			opacity: 0.8;
+			font-family: "Comic Sans MS";
+			font-size: 14px;
+		}
+		#ShowInfo2 {
+			position: absolute;
+			
+			right: 1%;
+			top: 2%;
+			padding: 10px 20px;
+			border: 3px solid rgb(80,80,80,0.7);
+			width: 250px;
+			background-color: rgb(255,255,255,0.7);
+			opacity: 0.8;
+			font-family: "Comic Sans MS";
+			font-size: 14px;
+		}
+		#chartPanel {
+		        background: #fff;
+		        font: "Avenir Next W00";
+		        line-height: 1.5em;
+		        overflow: auto;
+		        padding: 10px;
+		        width: 580px;
+		        height: 300px;
+		      }
+		.chart {
+		        height: 280px;
+		      }
+		
+		
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.19/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.19/"></script>
+	
+
+    <script>
+        require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer",
+            "esri/Graphic",
+            "esri/layers/GeoJSONLayer",
+			"esri/geometry/geometryEngine",
+			"esri/renderers/SimpleRenderer",
+			"esri/symbols/SimpleMarkerSymbol",
+			"esri/symbols/SimpleFillSymbol",
+			"esri/widgets/Legend",
+			"esri/geometry/geometryEngine",
+			"esri/symbols/WebStyleSymbol"
+			], function (esriConfig, Map, MapView, FL, Graphic, GeoJSONLayer,geometryEngine,SR,SMS,SFS,Legend,geometryEngine,WebStyleSymbol) {
+
+                esriConfig.apiKey = "AAPK56e3ac027f044c4089d8ceec232fc05dYaOuzVRzm8tMRqvzOvDvIEevbqJ85yppn9PacU6cy4duurJrVK9wo_8BcWO8i8bi";
+                var a = 0;
+				
+				var year = [];
+				var m = [];
+                var n = " ";
+				
+                const map = new Map({
+                    basemap: "hybrid" // Basemap layer service
+                });
+				
+				const sms = new SMS({
+				  style: "circle",
+				  outline: null
+				});
+				
+				const sms1 = new SFS({
+				  
+				  color: [187, 184, 204, 0.8],
+				  outline: null
+				});
+				const sms2 = new SFS({
+				  
+				  color: [153, 92, 153, 0.8],
+				  outline: null
+				});
+				const sms3 = new SFS({
+				  
+				  color: [166, 0, 78, 0.8],
+				  outline: null
+				});
+				
+				const webStyleSymbol = new WebStyleSymbol({
+				  name: "Standing Sphere",
+				  styleName: "EsriThematicShapesStyle"
+				});
+				
+				     
+				  const sr_layer = new SR({
+				       symbol:sms1
+				       
+				     });
+				const referenceScale = 9244650;	 
+				const renderer = {
+				          type: "simple", // autocasts as new SimpleRenderer()
+				          symbol:sms,
+				          visualVariables: [
+				           
+				            
+				            {
+				              type: "color",
+				              field: "magnitude",
+				              stops: [
+				                { value: 10, color: [168, 40, 30, 1] },
+				                { value: 6, color: [216, 48, 32, 0.9] },
+				                { value: 5, color: [240, 112, 98, 0.8] },
+				                { value: 2, color: [248, 155, 145, 0.7] },
+				                { value: 0, color: [251, 177, 168, 0.6] }
+				              ]
+				            }
+				          ]
+				        };
+
+
+                const geojsonlayer = new GeoJSONLayer({
+                    url: "https://cxqttkl.github.io/web4gis15/China_No_Area.json",
+                    copyright: "China Province"
+                });
+                geojsonlayer.outFields = ["*"];
+                map.add(geojsonlayer);
+				const layer_2022 = new FL({
+				    url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Earthquakes_Since1970/FeatureServer/0",
+				    popupTemplate:{title:"{magnitude}"},
+					renderer: renderer
+				});
+				
+				map.add(layer_2022);
+
+                const view = new MapView({
+                    map: map,
+                    center: [114, 30], // Longitude, latitude
+                    zoom: 3, // Zoom level
+                    container: "viewDiv" // Div element
+                });
+				function showCoordinates(pt) {
+					var coords = "纬度：" + pt.latitude.toFixed(3) + " 经度：" + pt.longitude.toFixed(3) +" "+
+						"比例尺：" + "1/"+Math.round(view.scale * 1) / 1 +" "+
+						"缩放级别：" + view.zoom;
+					coordsWidget.innerHTML = coords;
+				}
+				view.on(["pointer-down", "pointer-move"], function(event) {
+					showCoordinates(view.toMap({
+						x: event.x,
+						y: event.y
+					}));
+				});
+				
+				view.when(() => {
+				          // get the first layer in the collection of operational layers in the WebMap
+				          // when the resources in the MapView have loaded.
+				         
+				
+				          const legend = new Legend({
+				            view: view,
+				            layerInfos: [
+				              {
+				                layer: layer_2022,
+				                title: "地震"
+				              }
+				            ]
+				          });
+				
+				          // Add widget to the bottom right corner of the view
+				          view.ui.add(legend, "bottom-right");
+				        });
+				
+
+
+                view.on("click", function (evt) {
+                    view.graphics.removeAll();
+                    if (evt.button == 0){
+                    let query = geojsonlayer.createQuery();
+                    query.geometry = view.toMap(evt);  // the point location of the pointer
+                    query.distance = 20;
+                    query.units = "kilometers";
+                    query.spatialRelationship = "intersects";  // this is the default
+                    query.returnGeometry = true;
+                    query.outFields = ["*"];
+                    //query.where = "mag > 3";
+
+                    //geojsonlayer.queryFeatureCount(query).then(function (abc) { alert("Layer: "+abc) });
+                    geojsonlayer.queryFeatures(query).then(function (abc) {
+
+
+                        abc.features.forEach(function (item) {
+                       const bufferPoly = geometryEngine.geodesicBuffer(item.geometry,100,'kilometers');
+                            
+                            
+                           
+								   
+                        let query2 = layer_2022.createQuery();
+                        query2.geometry = bufferPoly; 
+                        
+                        query2.spatialRelationship = "intersects";  // this is the default
+                        query2.returnGeometry = true;
+                        query2.outFields = ["*"];
+						
+						layer_2022.queryFeatureCount(query2).then(function(obj) {
+						  a = obj;
+						  const area = geometryEngine.geodesicArea(item.geometry, "square-kilometers");
+						  
+						  if(a<=10){
+						  	 var g = new Graphic({
+						  	geometry: bufferPoly,
+						  	attributes: item.attributes,
+						  	symbol:sms1
+						  	});
+						  	view.graphics.add(g);
+							alert("省份: " + item.attributes["PROV"]+ "\n"+
+							       " 面积: " +  area+ "\n"+
+									"地震次数:"+a +"\n"+
+									"频发程度：不频繁");
+						  }
+						  if(a>10 && a <= 20){
+						  	var g = new Graphic({
+						    geometry: bufferPoly,
+						    attributes: item.attributes,
+						  	 symbol:sms2
+						  	});
+						  							  
+						      view.graphics.add(g);
+							  alert("省份: " + item.attributes["PROV"]+ "\n"+
+							         " 面积: " +  area+ "\n"+
+							  		"地震次数:"+a +"\n"+
+							  		"频发程度：较为频繁");
+						  }
+						  if(a>20){
+						  	var g = new Graphic({
+						    geometry: bufferPoly,
+						    attributes: item.attributes,
+						  	 symbol:sms3
+						  	});
+						  							  
+						      view.graphics.add(g);
+							  alert("省份: " + item.attributes["PROV"]+ "\n"+
+							         " 面积: " +  area+ "\n"+
+							  		"地震次数:"+a +"\n"+
+							  		"频发程度：频繁");
+						  }
+						  });
+						  
+						  
+						  
+                        
+                        layer_2022.queryFeatures(query2).then(function(eqs){
+							
+                             
+                            eqs.features.forEach(function(eachEq){
+							
+								n = eachEq.attributes["year_"];
+								year.push(n);
+								n = eachEq.attributes["magnitude"];
+								m.push(n);
+								
+								
+                                
+                                var g = new Graphic({
+                                geometry: eachEq.geometry,
+                                attributes: eachEq.attributes,
+                                symbol: {
+                                    type: "simple-marker",
+                                    color: [200, 0, 0, 0.8]
+                                    //size: 3,//item.attributes['magnitude'] * item.attributes['magnitude'],
+                                    //style: "square"
+                        
+                                }
+                        });
+                        
+                        view.graphics.add(g);
+                            });
+							
+                            
+                        });
+						
+						
+						
+						
+						
+						
+						});
+						
+
+                    });
+                    }
+					if (evt.button == 2){
+						 
+						let query = layer_2022.createQuery();
+						
+						query.geometry = view.toMap(evt);  // the point location of the pointer
+						  // this is the default
+						  query.distance = 20;
+						  query.units = "miles"
+						  query.spatialRelationship = "intersects";
+						query.returnGeometry = true;
+						//query.outFields = ["*"];
+						layer_2022.queryFeatures(query).then(function (ab) {
+						console.log(ab)
+						
+						    ab.features.forEach(function (item) {
+						   
+						        alert("地震发生地点："+ item.attributes["name"] +"\n"+
+								"地震发生年份："+ item.attributes["year_"] +"\n"+
+								      "地震级别："+item.attributes["magnitude"]);
+						        
+						    });
+						
+						});
+					}
+                });
+				
+ 
+
+            });
+    </script>
+	
+
+</head>
+
+<body>
+	
+    <div id="viewDiv"></div>
+	<div id="ShowInfo1">
+		<h1>"中国地震专题图"</h1>
+	</div>
+	<div id="ShowInfo">
+		<div id="coordsWidget" className="esri-widget esri-component"></div>
+	</div>
+	<div id="ShowInfo2">
+		<a>   我国位于世界两大地震带――环太平洋地震带与欧亚地震带之间，受太平洋板块、印度板块和菲律宾海板块的挤压，
+		地震断裂带十分活跃。中国地震主要分布在五个区域:
+		台湾省、西南地区、西北地区、华北地区、东南沿海地区和23条地震带上。</a>
+		<a>中国地震活动频度高、强度大、震源浅，分布广，是一个震灾严重的国家。1900年以来，中国死于地震的人数达 55万之多，
+		占全球地震死亡人数的53%;1949年以来，100多次破坏性地震袭击了22个省(自治区、直辖市)，其中涉及东部地区14个省份，
+		造成27万余人丧生，占全国各类灾害死亡人数的54%，
+		地震成灾面积达30多万平方公里，房屋倒塌达700万间。地震及其他自然灾害的严重性构成中国的基本国情之一。</a>
+	</div>
+	<div id="chartPanel"><canvas id="chart" class="chart"></canvas></div>
+	
+	
+</body>
+
+</html>
